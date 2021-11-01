@@ -13,7 +13,7 @@ def planear_escaneo(tuneles,robots):
             aux = 0
 
             for x in tunel:
-                if x == 'E':
+                if x[2] == 'E':
                     aux +=1
             
             if aux == len(tunel):
@@ -22,41 +22,64 @@ def planear_escaneo(tuneles,robots):
                 return False   
             
         def actions(self, state):
-            # Moverse de zona
+            tunel, robot = state
+            accion = []
 
-            # Recargar energia
+            for rob in robot:
+                id, zona, bateria = rob
 
-            action = (zonaaction, robotaction)
-            return action
+                if bateria >= 100: # Moverse de zona
+                    posiciones_posibles = [(zona, zona - 1), (zona - 1, zona), (zona, zona + 1), (zona + 1, zona)]
+
+                    for posicion in posiciones_posibles:
+                        if posicion in tunel:
+                            accion.append((posicion, rob, 'moverzona'))
+
+                if bateria > 1000: # Recargar energia
+                    for robcarga in robot:
+                        id2, zona2, bateria2 = robcarga
+
+                        if (zona2 == zona) and (bateria2 < 1000):
+                            accion.append((zona, robcarga, 'recargarrobot'))
+
+            return accion
                 
         def cost(self, state, action):
-            if action == 'moverzona': # Moverse de zona = 1 minuto (100 mAh)
+            x, y, accion = action
+
+            if accion == 'moverzona': # Moverse de zona = 1 minuto (100 mAh)
                 return 1
-            elif action == 'recargarrobot': # Recargar la energia de un robot mapeador = 5 minutos
+            else: # Recargar la energia de un robot mapeador = 5 minutos
                 return 5
                 
         def result(self, state, action):
-            zonaaction, robotaction = action
+            zonaaction, robotaction, accion = action
             tunel, robot = state
-            tuplatunel = list(tunel)
-            tuplarobot = list(robot)
-            tupla = []
+            tuplatunel = tunel
+            tuplarobot = robot
 
-            if action == 'recargarrobot': # Resultado de recargar robot
+            if accion == 'recargarrobot': # Resultado de recargar robot
                 for x in tuplarobot:
                     if x == robotaction:
-                        x = 1000
-            elif action == 'moverzona': # Resultado de mover robot de zona      
+                        x[2] = 1000
+                    break
+            elif accion == 'moverzona': # Resultado de mover robot de zona      
                 for y in tuplatunel:
                     if y == zonaaction:
-                        y = 'E'
+                        y[2] = 'E'
+                        for z in tuplarobot:
+                            if z == robotaction:
+                                z[1] = zonaaction
+                                if z[0] != 'soporte':
+                                    z[2] -= 100
+                                break
+                        break
 
-            tupla = (tuplatunel, tuplarobot)
-            return tupla
+            return (tuplatunel, tuplarobot)
                 
         def heuristic(self, state):
             # Cantidad de zonas que faltan esplorar
             tunel, robot = state
-            return len([x for x in tunel if x != 'E'])
+            return len([x for x in tunel if x[2] != 'E'])
 
     return
