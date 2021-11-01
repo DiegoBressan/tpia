@@ -29,7 +29,7 @@ def planear_escaneo(tuneles,robots):
                 id, zona, bateria = rob
 
                 if bateria >= 100: # Moverse de zona
-                    posiciones_posibles = [(zona, zona - 1), (zona - 1, zona), (zona, zona + 1), (zona + 1, zona)]
+                    posiciones_posibles = [(zona[0], zona[1] - 1), (zona[0] - 1, zona[1]), (zona[0], zona[1] + 1), (zona[0] + 1, zona[1])]
 
                     for posicion in posiciones_posibles:
                         if posicion in tunel:
