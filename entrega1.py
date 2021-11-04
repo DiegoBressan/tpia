@@ -10,7 +10,7 @@ def planear_escaneo(tuneles, robots):
     # [0] El estado los túneles que están pendientes de revision
     # [1] Una lista de robots con:
         # [1][0] El tipo de robot,
-        # [1][1] La posicion inicial 5,1 ya que la 5,0 no debemos evaluarla
+        # [1][1] La posicion actual 5,0 
         # [1][2] Se le asigna una carga (default 1000 para los escaneadores, 9999 para los soportes)
 
     INITIAL_STATE = (tuneles, [])
@@ -25,7 +25,6 @@ def planear_escaneo(tuneles, robots):
     class Problema(SearchProblem):
         def is_goal(self, state):
             tuneles_pendientes = state[0]
-            print(len(tuneles_pendientes))
             if len(tuneles_pendientes) == 0:
                 return True
             return False
@@ -33,7 +32,7 @@ def planear_escaneo(tuneles, robots):
         def actions(self, state):
             tuneles_pendientes, robots_attrs = state
             movimientos_disponibles = [[1, 0], [0, 1], [-1, 0], [0, -1]]
-            acciones_disponibles = [] # Las acciones tendrán 3 campos: [0] robot [1] tipo de accion (escanear/cargar) [2] prox posicion o carga
+            acciones_disponibles = [] # Las acciones tendrán 3 campos: [0] robot [1] tipo de accion (escanear/cargar) [2] prox posicion o proximo robot a cargar
             
             for robot in robots_attrs:
                 if robot[0][0] == 'e' and robot[2] >= 100: # Es un robot scaneador y puede seguir escaneando ya que tiene >100 de bateria
@@ -84,8 +83,6 @@ def planear_escaneo(tuneles, robots):
             robots = tuple([tuple(x) for x in robots])
             _tuneles = tuple(_tuneles)
 
-            #print((tuneles, robots))
-
             return (_tuneles, robots)
 
         def heuristic(self, state):
@@ -102,17 +99,14 @@ def planear_escaneo(tuneles, robots):
 
     return _plan
 
-if __name__ == '__main__':    
-    
+if __name__ == '__main__':
     #test
     tuneles = (
-        (2, 3),
-        (3, 3),
-        (4, 3),
-        (5, 1), (5, 2), (5, 3),
-        (6, 3),
-        (7, 3),
-        (8, 3),
+        (3, 2), (3, 3), (3, 4), (3, 5),
+        (4, 2), (4, 5),
+        (5, 1), (5, 2), (5, 3), (5, 4), (5, 5),
+        (6, 2), (6, 5),
+        (7, 2), (7, 3), (7, 4), (7, 5),
     )
 
     robots = (("e1", "escaneador"), ("s1", "soporte"))
