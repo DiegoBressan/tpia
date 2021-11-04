@@ -35,21 +35,15 @@ def planear_escaneo(tuneles, robots):
             acciones_disponibles = [] # Las acciones tendrán 3 campos: [0] robot [1] tipo de accion (escanear/cargar) [2] prox posicion o proximo robot a cargar
             
             for robot in robots_attrs:
-                if robot[0][0] == 'e' and robot[2] >= 100: # Es un robot scaneador y puede seguir escaneando ya que tiene >100 de bateria
-                    for movimiento in movimientos_disponibles:
-                        proxima_posicion = [list(robot[1])[0] + movimiento[0], list(robot[1])[1] + movimiento[1]]
-                        if tuple(proxima_posicion) in tuneles:
-                            acciones_disponibles.append([robot[0], "mover", proxima_posicion])
-                elif robot[0][0] == 's':
+                if robot[0][0] == 's':
                     for robot_a_cargar in robots_attrs:
                         if robot[1] == robot_a_cargar[1] and robot_a_cargar[2] < 1000 and robot_a_cargar[0][0] == 'e':
-                            acciones_disponibles.append([robot[0], "cargar", robot_a_cargar[0]])
+                            acciones_disponibles.append((robot[0], "cargar", robot_a_cargar[0]))
+                if robot[2] >= 100:
                     for movimiento in movimientos_disponibles:
-                        proxima_posicion = [list(robot[1])[0] + movimiento[0], list(robot[1])[1] + movimiento[1]]
-                        if tuple(proxima_posicion) in tuneles:
-                            acciones_disponibles.append([robot[0], "mover", proxima_posicion])
-
-            #print(acciones_disponibles)
+                            proxima_posicion = [list(robot[1])[0] + movimiento[0], list(robot[1])[1] + movimiento[1]]
+                            if tuple(proxima_posicion) in tuneles:
+                                acciones_disponibles.append((robot[0], "mover", tuple(proxima_posicion)))
 
             return acciones_disponibles
 
