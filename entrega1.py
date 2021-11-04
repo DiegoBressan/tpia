@@ -25,6 +25,7 @@ def planear_escaneo(tuneles, robots):
     class Problema(SearchProblem):
         def is_goal(self, state):
             tuneles_pendientes = state[0]
+            print(len(tuneles_pendientes))
             if len(tuneles_pendientes) == 0:
                 return True
             return False
@@ -38,12 +39,18 @@ def planear_escaneo(tuneles, robots):
                 if robot[0][0] == 'e' and robot[2] >= 100: # Es un robot scaneador y puede seguir escaneando ya que tiene >100 de bateria
                     for movimiento in movimientos_disponibles:
                         proxima_posicion = [list(robot[1])[0] + movimiento[0], list(robot[1])[1] + movimiento[1]]
-                        if tuple(proxima_posicion) in tuneles_pendientes:
+                        if tuple(proxima_posicion) in tuneles:
                             acciones_disponibles.append([robot[0], "mover", proxima_posicion])
                 elif robot[0][0] == 's':
                     for robot_a_cargar in robots_attrs:
                         if robot[1] == robot_a_cargar[1] and robot_a_cargar[2] < 1000 and robot_a_cargar[0][0] == 'e':
                             acciones_disponibles.append([robot[0], "cargar", robot_a_cargar[0]])
+                    for movimiento in movimientos_disponibles:
+                        proxima_posicion = [list(robot[1])[0] + movimiento[0], list(robot[1])[1] + movimiento[1]]
+                        if tuple(proxima_posicion) in tuneles:
+                            acciones_disponibles.append([robot[0], "mover", proxima_posicion])
+
+            #print(acciones_disponibles)
 
             return acciones_disponibles
 
@@ -55,54 +62,61 @@ def planear_escaneo(tuneles, robots):
         
         def result(self, state, action):
             robot_accion, tipo_accion, posicion_o_robot = action
-            tuneles, robots = state
+            _tuneles, robots = state
 
             robots = [list(x) for x in robots]
-            tuneles = list(tuneles)
+            _tuneles = list(_tuneles)
 
             if tipo_accion == "mover":
                 robot = [x for x in robots if x[0] == robot_accion]
                 robot = robot[0]
                 posicion_o_robot = tuple(posicion_o_robot)
                 robot[1] = posicion_o_robot
-                robot[2] -= 100
-                if posicion_o_robot in tuneles:
-                    tuneles.remove(posicion_o_robot)
+                if robot[0][0] == 'e':
+                    robot[2] -= 100
+                    if posicion_o_robot in _tuneles:
+                        _tuneles.remove(posicion_o_robot)
             else:
                 robot_a_cargar = [x for x in robots if x[0] == posicion_o_robot]
                 robot_a_cargar = robot_a_cargar[0]
                 robot_a_cargar[2] = 1000
             
             robots = tuple([tuple(x) for x in robots])
-            tuneles = tuple(tuneles)
+            _tuneles = tuple(_tuneles)
 
-            print((tuneles, robots))
+            #print((tuneles, robots))
 
-            return (tuneles, robots)
+            return (_tuneles, robots)
 
         def heuristic(self, state):
             return len(state[0])
 
     problema = Problema(INITIAL_STATE)
-
     resultado = astar(problema, graph_search=True)
-    plan = []
+    _plan = []
 
     for accion, state in resultado.path():
         # Descartar la primera acción que es None
         if (accion is not None):
-            plan.append(accion)
+            _plan.append(accion)
 
-    return plan
+    return _plan
 
-"""if __name__ == '__main__':    
+if __name__ == '__main__':    
     
     #test
     tuneles = (
+        (2, 3),
         (3, 3),
         (4, 3),
         (5, 1), (5, 2), (5, 3),
+        (6, 3),
+        (7, 3),
+        (8, 3),
     )
+
     robots = (("e1", "escaneador"), ("s1", "soporte"))
 
-    plan = planear_escaneo(tuneles, robots)"""
+    plan = planear_escaneo(tuneles, robots)
+
+    print(plan)
